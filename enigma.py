@@ -7,7 +7,7 @@ class Enigma:
         self.rev_hash_map = {v: k for k, v in self.hash_map.items()}
         self.reflector_map = reflector_map
         pass
-
+#TODO nothing
     def encrypt(self, message):
         count = 0
         result = []
