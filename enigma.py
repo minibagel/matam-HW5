@@ -60,9 +60,10 @@ class Enigma:
         shift = ((2*w1) - w2 + w3) % 26
 
         if shift == 0:
-            i += shift
-        else:
             i += 1
+        else:
+            i += shift
+                
 
         i = i % 26
 
@@ -97,9 +98,9 @@ def load_enigma_from_path(path):
         with open(path, "r") as f:
             data = json.load(f)
 
-        map_hash = data["map_hash"]
+        map_hash = data["hash_map"]
         wheels = data["wheels"]
-        map_reflector = data["map_reflector"]
+        map_reflector = data["reflector_map"]
 
         return Enigma(map_hash, wheels, map_reflector)
 
@@ -107,3 +108,57 @@ def load_enigma_from_path(path):
         raise JSONFileException()
 
 
+import sys
+
+USAGE_MSG = "Usage: python3 enigma.py -c <config_file> -i <input_file> -o <output_file>"
+ERROR_MSG = "The enigma script has encountered an error"
+
+def main():
+    try:
+        args = sys.argv[1:]
+
+        config_file = None
+        input_file = None
+        output_file = None
+
+        i = 0
+        while i < len(args):
+            if args[i] == "-c":
+                config_file = args[i + 1]
+            elif args[i] == "-i":
+                input_file = args[i + 1]
+            elif args[i] == "-o":
+                output_file = args[i + 1]
+            else:
+                print(USAGE_MSG, file=sys.stderr)
+                exit(1)
+            i += 2
+
+        if config_file is None or input_file is None:
+            print(USAGE_MSG, file=sys.stderr)
+            exit(1)
+
+        enigma = load_enigma_from_path(config_file)
+
+        with open(input_file, "r") as f:
+            lines = f.readlines()
+
+        encrypted_lines = []
+        for line in lines:
+            encrypted_lines.append(enigma.encrypt(line.rstrip("\n")))
+
+        if output_file is not None:
+            with open(output_file, "w") as f:
+                for line in encrypted_lines:
+                    f.write(line + "\n")
+        else:
+            for line in encrypted_lines:
+                print(line)
+
+    except Exception:
+        print(ERROR_MSG)
+        exit(1)
+
+
+if __name__ == "__main__":
+    main()
